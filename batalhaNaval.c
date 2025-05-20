@@ -1,143 +1,113 @@
 #include <stdio.h>
-#include <stdbool.h>
 
-#define TAMANHO_TABULEIRO 10
-#define TAMANHO_NAVIO 3
-#define VALOR_AGUA 0
-#define VALOR_NAVIO 3
+#define TAM 10
+#define NAVIO 3
+#define HABILIDADE 5
 
-// Inicializa todas as posições do tabuleiro com 0 (água)
-void inicializarTabuleiro(int tabuleiro[TAMANHO_TABULEIRO][TAMANHO_TABULEIRO]) {
-    for (int i = 0; i < TAMANHO_TABULEIRO; i++) {
-        for (int j = 0; j < TAMANHO_TABULEIRO; j++) {
-            tabuleiro[i][j] = VALOR_AGUA;
+// Função para inicializar o tabuleiro com 0 (água)
+void inicializarTabuleiro(int tabuleiro[TAM][TAM]) {
+    for (int i = 0; i < TAM; i++) {
+        for (int j = 0; j < TAM; j++) {
+            tabuleiro[i][j] = 0;
         }
     }
 }
 
-// Verifica se é possível posicionar horizontalmente
-bool podePosicionarHorizontal(int tabuleiro[TAMANHO_TABULEIRO][TAMANHO_TABULEIRO], int linha, int coluna) {
-    if (coluna + TAMANHO_NAVIO > TAMANHO_TABULEIRO) return false;
-
-    for (int i = 0; i < TAMANHO_NAVIO; i++) {
-        if (tabuleiro[linha][coluna + i] != VALOR_AGUA)
-            return false;
-    }
-    return true;
-}
-
-// Verifica se é possível posicionar verticalmente
-bool podePosicionarVertical(int tabuleiro[TAMANHO_TABULEIRO][TAMANHO_TABULEIRO], int linha, int coluna) {
-    if (linha + TAMANHO_NAVIO > TAMANHO_TABULEIRO) return false;
-
-    for (int i = 0; i < TAMANHO_NAVIO; i++) {
-        if (tabuleiro[linha + i][coluna] != VALOR_AGUA)
-            return false;
-    }
-    return true;
-}
-
-// Verifica se é possível posicionar diagonal crescente (↘)
-bool podePosicionarDiagonalPrincipal(int tabuleiro[TAMANHO_TABULEIRO][TAMANHO_TABULEIRO], int linha, int coluna) {
-    if (linha + TAMANHO_NAVIO > TAMANHO_TABULEIRO || coluna + TAMANHO_NAVIO > TAMANHO_TABULEIRO) return false;
-
-    for (int i = 0; i < TAMANHO_NAVIO; i++) {
-        if (tabuleiro[linha + i][coluna + i] != VALOR_AGUA)
-            return false;
-    }
-    return true;
-}
-
-// Verifica se é possível posicionar diagonal secundária (↙)
-bool podePosicionarDiagonalSecundaria(int tabuleiro[TAMANHO_TABULEIRO][TAMANHO_TABULEIRO], int linha, int coluna) {
-    if (linha + TAMANHO_NAVIO > TAMANHO_TABULEIRO || coluna - (TAMANHO_NAVIO - 1) < 0) return false;
-
-    for (int i = 0; i < TAMANHO_NAVIO; i++) {
-        if (tabuleiro[linha + i][coluna - i] != VALOR_AGUA)
-            return false;
-    }
-    return true;
-}
-
-// Posiciona horizontal
-void posicionarHorizontal(int tabuleiro[TAMANHO_TABULEIRO][TAMANHO_TABULEIRO], int linha, int coluna) {
-    for (int i = 0; i < TAMANHO_NAVIO; i++) {
-        tabuleiro[linha][coluna + i] = VALOR_NAVIO;
-    }
-}
-
-// Posiciona vertical
-void posicionarVertical(int tabuleiro[TAMANHO_TABULEIRO][TAMANHO_TABULEIRO], int linha, int coluna) {
-    for (int i = 0; i < TAMANHO_NAVIO; i++) {
-        tabuleiro[linha + i][coluna] = VALOR_NAVIO;
-    }
-}
-
-// Posiciona diagonal crescente ↘
-void posicionarDiagonalPrincipal(int tabuleiro[TAMANHO_TABULEIRO][TAMANHO_TABULEIRO], int linha, int coluna) {
-    for (int i = 0; i < TAMANHO_NAVIO; i++) {
-        tabuleiro[linha + i][coluna + i] = VALOR_NAVIO;
-    }
-}
-
-// Posiciona diagonal decrescente ↙
-void posicionarDiagonalSecundaria(int tabuleiro[TAMANHO_TABULEIRO][TAMANHO_TABULEIRO], int linha, int coluna) {
-    for (int i = 0; i < TAMANHO_NAVIO; i++) {
-        tabuleiro[linha + i][coluna - i] = VALOR_NAVIO;
-    }
-}
-
-// Exibe o tabuleiro
-void exibirTabuleiro(int tabuleiro[TAMANHO_TABULEIRO][TAMANHO_TABULEIRO]) {
-    printf("Tabuleiro:\n");
-    for (int i = 0; i < TAMANHO_TABULEIRO; i++) {
-        for (int j = 0; j < TAMANHO_TABULEIRO; j++) {
+// Função para imprimir o tabuleiro
+void imprimirTabuleiro(int tabuleiro[TAM][TAM]) {
+    for (int i = 0; i < TAM; i++) {
+        for (int j = 0; j < TAM; j++) {
             printf("%d ", tabuleiro[i][j]);
         }
         printf("\n");
     }
 }
 
+// Função para posicionar navio de tamanho 3 (horizontal, vertical ou diagonal)
+int posicionarNavio(int tabuleiro[TAM][TAM], int linha, int coluna, char direcao) {
+    for (int i = 0; i < 3; i++) {
+        int l = linha, c = coluna;
+        if (direcao == 'H') c += i;
+        else if (direcao == 'V') l += i;
+        else if (direcao == 'D') { l += i; c += i; }
+        else if (direcao == 'A') { l += i; c -= i; } // Diagonal anti
+
+        if (l < 0 || l >= TAM || c < 0 || c >= TAM || tabuleiro[l][c] != 0)
+            return 0; // Inválido ou sobreposto
+    }
+
+    for (int i = 0; i < 3; i++) {
+        int l = linha, c = coluna;
+        if (direcao == 'H') c += i;
+        else if (direcao == 'V') l += i;
+        else if (direcao == 'D') { l += i; c += i; }
+        else if (direcao == 'A') { l += i; c -= i; }
+
+        tabuleiro[l][c] = NAVIO;
+    }
+    return 1;
+}
+
+// Aplica habilidade centrada em (cx, cy), usando matriz nxn com valores 0 e 1
+void aplicarHabilidade(int tabuleiro[TAM][TAM], int habilidade[7][7], int cx, int cy, int tamanho) {
+    int centro = tamanho / 2;
+    for (int i = 0; i < tamanho; i++) {
+        for (int j = 0; j < tamanho; j++) {
+            if (habilidade[i][j] == 1) {
+                int x = cx - centro + i;
+                int y = cy - centro + j;
+                if (x >= 0 && x < TAM && y >= 0 && y < TAM && tabuleiro[x][y] == 0)
+                    tabuleiro[x][y] = HABILIDADE;
+            }
+        }
+    }
+}
+
+// Gera matriz de cone (7x7)
+void gerarCone(int cone[7][7]) {
+    for (int i = 0; i < 7; i++)
+        for (int j = 0; j < 7; j++)
+            cone[i][j] = (j >= 3 - i && j <= 3 + i && i >= 0) ? 1 : 0;
+}
+
+// Gera matriz de cruz (7x7)
+void gerarCruz(int cruz[7][7]) {
+    for (int i = 0; i < 7; i++)
+        for (int j = 0; j < 7; j++)
+            cruz[i][j] = (i == 3 || j == 3) ? 1 : 0;
+}
+
+// Gera matriz de octaedro (losango 7x7)
+void gerarOctaedro(int octaedro[7][7]) {
+    for (int i = 0; i < 7; i++)
+        for (int j = 0; j < 7; j++)
+            octaedro[i][j] = (abs(i - 3) + abs(j - 3) <= 3) ? 1 : 0;
+}
+
 int main() {
-    int tabuleiro[TAMANHO_TABULEIRO][TAMANHO_TABULEIRO];
+    int tabuleiro[TAM][TAM];
     inicializarTabuleiro(tabuleiro);
 
-    // Coordenadas dos 4 navios
-    int l1 = 1, c1 = 1;  // horizontal
-    int l2 = 4, c2 = 6;  // vertical
-    int l3 = 0, c3 = 7;  // diagonal ↙
-    int l4 = 6, c4 = 1;  // diagonal ↘
+    // Posicionamento de 4 navios
+    posicionarNavio(tabuleiro, 1, 1, 'H'); // horizontal
+    posicionarNavio(tabuleiro, 4, 0, 'V'); // vertical
+    posicionarNavio(tabuleiro, 6, 6, 'D'); // diagonal
+    posicionarNavio(tabuleiro, 0, 9, 'A'); // diagonal inversa
 
-    // Posiciona navio horizontal
-    if (!podePosicionarHorizontal(tabuleiro, l1, c1)) {
-        printf("Erro ao posicionar navio horizontal.\n");
-        return 1;
-    }
-    posicionarHorizontal(tabuleiro, l1, c1);
+    // Matrizes das habilidades
+    int cone[7][7], cruz[7][7], octaedro[7][7];
+    gerarCone(cone);
+    gerarCruz(cruz);
+    gerarOctaedro(octaedro);
 
-    // Posiciona navio vertical
-    if (!podePosicionarVertical(tabuleiro, l2, c2)) {
-        printf("Erro ao posicionar navio vertical.\n");
-        return 1;
-    }
-    posicionarVertical(tabuleiro, l2, c2);
+    // Aplicando habilidades ao tabuleiro
+    aplicarHabilidade(tabuleiro, cone, 3, 3, 7);
+    aplicarHabilidade(tabuleiro, cruz, 6, 2, 7);
+    aplicarHabilidade(tabuleiro, octaedro, 5, 7, 7);
 
-    // Posiciona navio diagonal ↙ (secundária)
-    if (!podePosicionarDiagonalSecundaria(tabuleiro, l3, c3)) {
-        printf("Erro ao posicionar navio diagonal ↙.\n");
-        return 1;
-    }
-    posicionarDiagonalSecundaria(tabuleiro, l3, c3);
-
-    // Posiciona navio diagonal ↘ (principal)
-    if (!podePosicionarDiagonalPrincipal(tabuleiro, l4, c4)) {
-        printf("Erro ao posicionar navio diagonal ↘.\n");
-        return 1;
-    }
-    posicionarDiagonalPrincipal(tabuleiro, l4, c4);
-
-    // Exibe o tabuleiro final
-    exibirTabuleiro(tabuleiro);
+    // Exibição final
+    printf("Tabuleiro com navios e habilidades:\n");
+    imprimirTabuleiro(tabuleiro);
 
     return 0;
 }
